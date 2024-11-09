@@ -5,11 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Room with Firebase</title>
 
-    <!-- إضافة Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+    <!-- تحميل Firebase SDK -->
+    <script type="module">
+        // استيراد مكتبات Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getDatabase, ref, push, set, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+        
+        // تكوين Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyChYmPKFAaFNLZQRZIzktCkpDA2wH0yV-Y",  // استبدل بـ API Key الخاص بك
+            authDomain: "tic-tac-toe-8c520.firebaseapp.com",
+            databaseURL: "https://tic-tac-toe-8c520-default-rtdb.firebaseio.com/",  // استبدل بـ Database URL الخاص بك
+            projectId: "tic-tac-toe-8c520",
+            storageBucket: "tic-tac-toe-8c520.appspot.com",
+            messagingSenderId: "269494832505",
+            appId: "1:269494832505:web:XXXXXXXXXXXXXX"  // استبدل بـ App ID الخاص بك
+        };
 
-    <!-- تخصيص واجهة المستخدم (CSS) -->
+        // تهيئة Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // المرجع الخاص بالرسائل
+        const messagesRef = ref(database, 'chat/messages');
+
+        // إرسال الرسالة
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+
+            if (message) {
+                console.log("Sending message: ", message);  // يعرض الرسالة في Console للتأكد من أنه تم إدخالها
+
+                const newMessageRef = push(messagesRef);
+                set(newMessageRef, {
+                    text: message,
+                    sender: 'User'
+                }).then(() => {
+                    console.log("Message sent successfully!");  // يظهر في Console عند إرسال الرسالة بنجاح
+                }).catch((error) => {
+                    console.error("Error sending message: ", error);  // يظهر في Console في حال حدوث خطأ
+                });
+
+                messageInput.value = '';  // مسح صندوق الإدخال بعد الإرسال
+            } else {
+                console.log("No message to send");  // يعرض هذه الرسالة إذا لم يتم إدخال نص
+            }
+        }
+
+        // عرض الرسائل في واجهة المستخدم
+        function displayMessages() {
+            // استماع للتحديثات في Firebase
+            messagesRef.on('child_added', (snapshot) => {
+                const message = snapshot.val();
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.classList.add(message.sender === 'User' ? 'user' : 'other');
+                messageElement.textContent = message.text;
+
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.appendChild(messageElement);
+
+                // التمرير إلى أسفل تلقائيًا عند وصول رسالة جديدة
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+        }
+
+        // بدء عرض الرسائل عند تحميل الصفحة
+        displayMessages();
+    </script>
+
+    <!-- CSS for chat UI -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -78,62 +144,6 @@
     <input type="text" id="messageInput" placeholder="Type a message...">
     <button onclick="sendMessage()">Send</button>
 </div>
-
-<script>
-    // Firebase Configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyChYmPKFAaFNLZQRZIzktCkpDA2wH0yV-Y", // API Key الذي حصلت عليه
-        authDomain: "tic-tac-toe-8c520.firebaseapp.com",
-        databaseURL: "https://tic-tac-toe-8c520-default-rtdb.firebaseio.com/",
-        projectId: "tic-tac-toe-8c520",
-        storageBucket: "tic-tac-toe-8c520.appspot.com",
-        messagingSenderId: "269494832505",
-        appId: "1:269494832505:web:XXXXXXXXXXXXXX"
-    };
-
-    // تهيئة Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database(app);
-
-    // المراجع الخاصة بالرسائل
-    const messagesRef = database.ref('chat/messages');
-
-    // إرسال الرسالة
-    function sendMessage() {
-        const messageInput = document.getElementById('messageInput');
-        const message = messageInput.value.trim();
-
-        if (message) {
-            const newMessageRef = messagesRef.push();
-            newMessageRef.set({
-                text: message,
-                sender: 'User'  // أو يمكنك إضافة اسم المستخدم هنا
-            });
-
-            messageInput.value = '';  // مسح صندوق الإدخال بعد الإرسال
-        }
-    }
-
-    // عرض الرسائل في واجهة المستخدم
-    function displayMessages() {
-        messagesRef.on('child_added', (snapshot) => {
-            const message = snapshot.val();
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
-            messageElement.classList.add(message.sender === 'User' ? 'user' : 'other');
-            messageElement.textContent = message.text;
-
-            const messagesDiv = document.getElementById('messages');
-            messagesDiv.appendChild(messageElement);
-
-            // التمرير إلى أسفل تلقائيًا عند وصول رسالة جديدة
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        });
-    }
-
-    // بدء عرض الرسائل عند تحميل الصفحة
-    displayMessages();
-</script>
 
 </body>
 </html>
