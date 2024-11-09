@@ -14,32 +14,36 @@ const winningCombinations = [
   [2, 4, 6]
 ];
 
-// Reset game
-function resetGame() {
-  cells.forEach(cell => cell.textContent = "");
-  currentPlayer = "X";
-  gameActive = true;
-}
-
-// Check for win
+// دالة التحقق من الفوز
 function checkWin() {
   return winningCombinations.some(combination => {
     return combination.every(index => cells[index].textContent === currentPlayer);
   });
 }
 
-// Check for draw
+// دالة التحقق من التعادل
 function checkDraw() {
   return cells.every(cell => cell.textContent !== "");
 }
 
-// Cell click event
+// دالة إعادة التشغيل
+function resetGame() {
+  cells.forEach(cell => {
+    cell.textContent = "";
+    cell.classList.remove("X", "O"); // إزالة الكلاس X و O عند إعادة التشغيل
+  });
+  currentPlayer = "X";
+  gameActive = true;
+}
+
+// دالة التعامل مع النقر على الخلية
 function handleCellClick(event) {
   const cell = event.target;
 
   if (cell.textContent !== "" || !gameActive) return;
 
   cell.textContent = currentPlayer;
+  cell.classList.add(currentPlayer); // إضافة كلاس X أو O حسب اللاعب الحالي
 
   if (checkWin()) {
     alert(`${currentPlayer} wins!`);
@@ -52,5 +56,6 @@ function handleCellClick(event) {
   }
 }
 
+// إضافة الأحداث للخلية وزر إعادة التشغيل
 cells.forEach(cell => cell.addEventListener("click", handleCellClick));
 restartButton.addEventListener("click", resetGame);
