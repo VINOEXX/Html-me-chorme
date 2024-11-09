@@ -1,25 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tic Tac Toe Game</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe with Firebase</title>
+
+    <!-- إضافة Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+
+    <!-- تخصيص واجهة المستخدم (CSS) -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f7f7f7;
+            margin: 0;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <h1>Tic Tac Toe</h1>
-  <div class="game-board" id="gameBoard">
-    <div class="cell" data-index="0"></div>
-    <div class="cell" data-index="1"></div>
-    <div class="cell" data-index="2"></div>
-    <div class="cell" data-index="3"></div>
-    <div class="cell" data-index="4"></div>
-    <div class="cell" data-index="5"></div>
-    <div class="cell" data-index="6"></div>
-    <div class="cell" data-index="7"></div>
-    <div class="cell" data-index="8"></div>
-  </div>
-  <button id="restartButton">Restart Game</button>
-  <script src="script.js"></script>
+
+<div>
+    <h1 style="text-align: center;">Tic-Tac-Toe</h1>
+    <div class="board" id="board">
+        <div class="cell" id="cell-0"></div>
+        <div class="cell" id="cell-1"></div>
+        <div class="cell" id="cell-2"></div>
+        <div class="cell" id="cell-3"></div>
+        <div class="cell" id="cell-4"></div>
+        <div class="cell" id="cell-5"></div>
+        <div class="cell" id="cell-6"></div>
+        <div class="cell" id="cell-7"></div>
+        <div class="cell" id="cell-8"></div>
+    </div>
+    <p id="message" style="text-align: center;"></p>
+</div>
+
+<script>
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyChYmPKFAaFNLZQRZIzktCkpDA2wH0yV-Y", // هذا هو API Key الذي حصلت عليه
+        authDomain: "tic-tac-toe-8c520.firebaseapp.com",
+        databaseURL: "https://tic-tac-toe-8c520-default-rtdb.firebaseio.com/",
+        projectId: "tic-tac-toe-8c520",
+        storageBucket: "tic-tac-toe-8c520.appspot.com",
+        messagingSenderId: "269494832505",
+        appId: "1:269494832505:web:XXXXXXXXXXXXXX"
+    };
+
+    // تهيئة Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database(app);
+
+    // متغيرات اللعبة
+    let currentPlayer = 'X';
+    let board = ['', '', '', '', '', '', '', '', ''];
+
+    // تحديث الخلايا بناءً على البيانات من Firebase
+    function updateBoardFromFirebase() {
+        const boardRef = database.ref('game/board');
+        boardRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                board = data;
+                updateBoardUI();
+            }
+        });
+    }
+
+    // تحديث واجهة المستخدم بناءً على board
+    function updateBoardUI() {
+        for (let i = 0; i < board.length; i++) {
+            document.getElementById('cell-' + i).innerText = board[i];
+        }
+    }
+
+    // التعامل مع الضغط على الخلايا
+    function handleCellClick(index) {
+        if (board[index] === '' && !checkWinner()) {
+            board[index] = currentPlayer;
+            updateFirebaseBoard();
+            if (checkWinner()) {
+                document.getElementById('message').innerText = currentPlayer + ' Wins!';
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                document.getElementById('message').innerText = 'Player ' + currentPlayer + "'s turn";
+            }
+        }
+    }
+
+    // التحقق من الفائز
+    function checkWinner() {
+        const winPatterns = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // صفوف
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // أعمدة
+            [0, 4, 8], [2, 4, 6] // قطريان
+        ];
+
+        for (let pattern of winPatterns) {
+            const [a, b, c] = pattern;
+            if (board[a] !== '' && board[a] === board[b] && board[a] === board[c]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // تحديث Firebase بboard الحالي
+    function updateFirebaseBoard() {
+        const boardRef = database.ref('game/board');
+        boardRef.set(board);
+    }
+
+    // تعيين الأحداث على الخلايا
+    document.querySelectorAll('.cell').forEach((cell, index) => {
+        cell.addEventListener('click', () => handleCellClick(index));
+    });
+
+    // تحديث اللعبة من Firebase عند تحميل الصفحة
+    updateBoardFromFirebase();
+    document.getElementById('message').innerText = 'Player ' + currentPlayer + "'s turn";
+</script>
+
 </body>
 </html>
