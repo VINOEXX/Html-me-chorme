@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: #000;
+        }
+        .container {
+            padding: 20px;
+        }
+        #usernameInput, #imageInput {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #saveBtn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Profile Settings</h2>
+        <label>Username:</label>
+        <input type="text" id="usernameInput" placeholder="Enter your username">
+        <label>Profile Image:</label>
+        <input type="file" id="imageInput">
+        <button id="saveBtn" onclick="saveProfile()">Save</button>
+    </div>
+
+    <script>
+        function saveProfile() {
+            const username = document.getElementById('usernameInput').value;
+            const imageInput = document.getElementById('imageInput').files[0];
+
+            if (username) {
+                localStorage.setItem('username', username);
+            }
+
+            if (imageInput) {
+                const reader = new FileReader();
+                reader.onloadend = function () {
+                    localStorage.setItem('profileImage', reader.result);
+                };
+                reader.readAsDataURL(imageInput);
+            }
+
+            alert('Profile saved!');
+            location.href = 'index.html';  // Redirect to homepage
+        }
+
+        window.onload = function () {
+            const savedUsername = localStorage.getItem('username');
+            const savedImage = localStorage.getItem('profileImage');
+
+            if (savedUsername) {
+                document.getElementById('usernameInput').value = savedUsername;
+            }
+
+            if (savedImage) {
+                document.getElementById('imageInput').src = savedImage;
+            }
+        };
+    </script>
+</body>
+</html>
