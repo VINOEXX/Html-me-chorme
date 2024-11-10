@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Post</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: #000;
+        }
+        .container {
+            padding: 20px;
+        }
+        .input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #addPostBtn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #addPostBtn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Add a Post</h2>
+        <textarea class="input" id="postText" placeholder="What do you think about my food?!"></textarea>
+        <input type="file" id="postImage" class="input" />
+        <button id="addPostBtn" onclick="savePost()">Post</button>
+    </div>
+
+    <script>
+        function savePost() {
+            const postText = document.getElementById('postText').value;
+            const postImage = document.getElementById('postImage').files[0];
+
+            // Convert the image to a base64 string if selected
+            let imageURL = '';
+            if (postImage) {
+                const reader = new FileReader();
+                reader.onloadend = function () {
+                    imageURL = reader.result;
+                    savePostData(postText, imageURL);
+                };
+                reader.readAsDataURL(postImage);
+            } else {
+                savePostData(postText);
+            }
+        }
+
+        function savePostData(postText, imageURL = '') {
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            posts.push({ text: postText, image: imageURL });
+            localStorage.setItem('posts', JSON.stringify(posts));
+            location.href = 'index.html';  // Redirect to homepage after posting
+        }
+    </script>
+</body>
+</html>
