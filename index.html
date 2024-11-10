@@ -3,147 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Room with Firebase</title>
-
-    <!-- تحميل Firebase SDK -->
-    <script type="module">
-        // استيراد مكتبات Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getDatabase, ref, push, set, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
-        
-        // تكوين Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyChYmPKFAaFNLZQRZIzktCkpDA2wH0yV-Y",  // استبدل بـ API Key الخاص بك
-            authDomain: "tic-tac-toe-8c520.firebaseapp.com",
-            databaseURL: "https://tic-tac-toe-8c520-default-rtdb.firebaseio.com/",  // استبدل بـ Database URL الخاص بك
-            projectId: "tic-tac-toe-8c520",
-            storageBucket: "tic-tac-toe-8c520.appspot.com",
-            messagingSenderId: "269494832505",
-            appId: "1:269494832505:web:XXXXXXXXXXXXXX"  // استبدل بـ App ID الخاص بك
-        };
-
-        // تهيئة Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        
-        // المرجع الخاص بالرسائل
-        const messagesRef = ref(database, 'chat/messages');
-
-        // إرسال الرسالة
-        function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value.trim();
-
-            if (message) {
-                console.log("Sending message: ", message);  // يعرض الرسالة في Console للتأكد من أنه تم إدخالها
-
-                const newMessageRef = push(messagesRef);
-                set(newMessageRef, {
-                    text: message,
-                    sender: 'User'
-                }).then(() => {
-                    console.log("Message sent successfully!");  // يظهر في Console عند إرسال الرسالة بنجاح
-                }).catch((error) => {
-                    console.error("Error sending message: ", error);  // يظهر في Console في حال حدوث خطأ
-                });
-
-                messageInput.value = '';  // مسح صندوق الإدخال بعد الإرسال
-            } else {
-                console.log("No message to send");  // يعرض هذه الرسالة إذا لم يتم إدخال نص
-            }
-        }
-
-        // عرض الرسائل في واجهة المستخدم
-        function displayMessages() {
-            // استماع للتحديثات في Firebase
-            messagesRef.on('child_added', (snapshot) => {
-                const message = snapshot.val();
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('message');
-                messageElement.classList.add(message.sender === 'User' ? 'user' : 'other');
-                messageElement.textContent = message.text;
-
-                const messagesDiv = document.getElementById('messages');
-                messagesDiv.appendChild(messageElement);
-
-                // التمرير إلى أسفل تلقائيًا عند وصول رسالة جديدة
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            });
-        }
-
-        // بدء عرض الرسائل عند تحميل الصفحة
-        displayMessages();
-    </script>
-
-    <!-- CSS for chat UI -->
+    <title>Social Platform</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f7f7f7;
-            margin: 0;
-        }
-        .chat-container {
-            width: 400px;
-            height: 600px;
             background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+            color: #000;
+        }
+        .container {
             padding: 20px;
-            display: flex;
-            flex-direction: column;
         }
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-        }
-        .message {
-            padding: 5px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        .message.user {
-            background-color: #d1e7fd;
-            align-self: flex-end;
-        }
-        .message.other {
-            background-color: #f0f0f0;
-            align-self: flex-start;
-        }
-        input[type="text"] {
-            width: 100%;
+        .post {
+            border: 1px solid #000;
             padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
             margin-bottom: 10px;
+            background-color: #f9f9f9;
         }
-        button {
-            padding: 10px;
+        .post img {
+            max-width: 100%;
+        }
+        #addPostBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
+            padding: 20px;
+            border-radius: 50%;
+            font-size: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        button:hover {
+        #addPostBtn:hover {
             background-color: #0056b3;
+        }
+        .profile {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .profile img {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
+    <div class="container" id="postContainer">
+        <!-- Posts will be displayed here -->
+    </div>
 
-<div class="chat-container">
-    <h2 style="text-align: center;">Chat Room</h2>
-    <div class="messages" id="messages"></div>
-    <input type="text" id="messageInput" placeholder="Type a message...">
-    <button onclick="sendMessage()">Send</button>
-</div>
+    <button id="addPostBtn" onclick="location.href='addPost.html'">+</button>
 
+    <div class="profile" onclick="location.href='profile.html'">
+        <img src="default-profile.jpg" alt="Profile">
+        <span id="username">Username</span>
+    </div>
+
+    <script>
+        // Load posts from localStorage
+        function loadPosts() {
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            const postContainer = document.getElementById('postContainer');
+            postContainer.innerHTML = '';
+            posts.forEach(post => {
+                const postDiv = document.createElement('div');
+                postDiv.classList.add('post');
+                postDiv.innerHTML = `
+                    <p>${post.text}</p>
+                    ${post.image ? `<img src="${post.image}" alt="Post Image">` : ''}
+                `;
+                postContainer.appendChild(postDiv);
+            });
+        }
+
+        // Call loadPosts on page load
+        window.onload = loadPosts;
+    </script>
 </body>
 </html>
